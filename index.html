@@ -3,7 +3,7 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>ANIKING - AI Chat & Timer</title>
+    <title>ANIKING - Chatbot</title>
     <link href="https://fonts.googleapis.com/css2?family=Orbitron:wght@400;700&family=Inter:wght@300;500;700&display=swap" rel="stylesheet">
     <style>
         :root {
@@ -20,7 +20,6 @@
             margin: 0; color: var(--text-main); height: 100vh; display: flex; flex-direction: column; overflow: hidden;
         }
 
-        /* Header Layout */
         .chat-header {
             background: var(--card-bg); padding: 10px 15px; border-bottom: 1px solid var(--accent-cyan);
             display: flex; align-items: center; justify-content: space-between;
@@ -30,8 +29,6 @@
         .header-left { display: flex; align-items: center; gap: 10px; }
         .chat-header h2 { font-family: 'Orbitron'; font-size: 0.8rem; color: var(--accent-cyan); margin: 0; }
 
-        .reload-btn { background: none; border: 1px solid #333; color: var(--accent-cyan); border-radius: 50%; width: 30px; height: 30px; cursor: pointer; }
-
         /* User Account Pill */
         .user-pill {
             display: flex; align-items: center; background: rgba(0, 242, 255, 0.1);
@@ -39,9 +36,6 @@
         }
         .user-pill img { width: 22px; height: 22px; border-radius: 50%; margin-right: 6px; }
         .user-pill span { font-size: 0.7rem; color: white; }
-
-        /* Usage Badge in Header */
-        #usage-timer { font-size: 0.6rem; color: #888; margin-top: 2px; display: block; }
 
         /* Chat Window */
         #chat-window { flex: 1; overflow-y: auto; padding: 20px; display: flex; flex-direction: column; gap: 15px; background: #050505; }
@@ -54,64 +48,65 @@
         #user-input { flex: 1; background: #151515; border: 1px solid #333; padding: 12px; border-radius: 25px; color: white; outline: none; }
         #send-btn { background: var(--accent-cyan); border: none; padding: 0 20px; border-radius: 25px; font-weight: bold; cursor: pointer; }
 
-        /* Profile Modal with Round Usage Box */
+        /* MODAL */
         #account-modal {
             position: fixed; top: 0; left: 0; width: 100%; height: 100%;
-            background: rgba(0,0,0,0.95); display: none; align-items: center; justify-content: center; z-index: 1000;
+            background: rgba(0,0,0,0.95); display: none; align-items: center; justify-content: center; z-index: 2000;
         }
         .modal-content {
             background: #111; padding: 30px; border-radius: 20px; border: 1px solid var(--accent-cyan);
             text-align: center; width: 85%; max-width: 300px;
         }
-        .modal-content img { width: 80px; height: 80px; border-radius: 50%; border: 2px solid var(--accent-cyan); }
+        .modal-content img { width: 80px; height: 80px; border-radius: 50%; border: 2px solid var(--accent-cyan); margin-bottom: 10px; }
 
         /* THE ROUNDED USAGE BOX */
         .usage-box {
-            margin-top: 20px; padding: 15px; border-radius: 20px;
+            margin: 20px 0; padding: 15px; border-radius: 20px;
             background: rgba(0, 242, 255, 0.05); border: 1px dashed var(--accent-cyan);
         }
-        .usage-box span { display: block; font-family: 'Orbitron'; color: var(--accent-cyan); font-size: 1.1rem; margin-top: 5px; }
+        .usage-box p { font-size: 0.6rem; color: #888; text-transform: uppercase; margin: 0; }
+        .usage-box span { display: block; font-family: 'Orbitron'; color: var(--accent-cyan); font-size: 1.2rem; margin-top: 5px; }
 
-        .close-btn { margin-top: 20px; background: var(--accent-cyan); color: #000; padding: 12px; border-radius: 8px; border: none; width: 100%; font-weight: bold; }
+        .close-btn { background: var(--accent-cyan); color: #000; padding: 12px; border-radius: 8px; border: none; width: 100%; font-weight: bold; cursor: pointer; }
     </style>
 </head>
 <body>
 
     <div class="chat-header">
         <div class="header-left">
-            <button class="reload-btn" onclick="location.reload()">↻</button>
+            <button onclick="location.reload()" style="background:none; border:1px solid #333; color:var(--accent-cyan); border-radius:50%; width:30px; height:30px; cursor:pointer;">↻</button>
             <div>
                 <h2>ANIKING AI</h2>
-                <span id="usage-timer">Session: 0m 0s</span>
+                <div id="session-timer" style="font-size: 0.6rem; color: #666;">Session: 0s</div>
             </div>
         </div>
         
-        <div class="user-pill" onclick="toggleModal(true)">
+        <div class="user-pill" onclick="openProfile()">
             <img id="header-avatar" src="https://api.dicebear.com/7.x/adventurer/svg?seed=Lucky">
             <span id="header-name">User</span>
         </div>
     </div>
 
     <div id="chat-window">
-        <div class="message bot">Welcome! I'm tracking your training time today. How can I help?</div>
+        <div class="message bot">Welcome! I am tracking your usage time. Click your profile to see it!</div>
     </div>
 
     <div class="input-area">
-        <input type="text" id="user-input" placeholder="Type a message...">
+        <input type="text" id="user-input" placeholder="Ask a doubt...">
         <button id="send-btn">SEND</button>
     </div>
 
     <div id="account-modal">
         <div class="modal-content">
             <img id="modal-avatar" src="">
-            <h3 id="modal-name" style="color: var(--accent-cyan); margin: 10px 0;">---</h3>
+            <h3 id="modal-name" style="color: var(--accent-cyan); margin: 10px 0; font-family: 'Orbitron';">---</h3>
             
             <div class="usage-box">
-                <p style="font-size: 0.6rem; color: #888; text-transform: uppercase;">Total Chat Usage</p>
-                <span id="total-usage-display">0m 0s</span>
+                <p>Chatbot Usage Time</p>
+                <span id="usage-display-box">0m 0s</span>
             </div>
 
-            <button class="close-btn" onclick="toggleModal(false)">BACK TO CHAT</button>
+            <button class="close-btn" onclick="closeProfile()">BACK TO CHAT</button>
         </div>
     </div>
 
@@ -119,7 +114,6 @@
         import { initializeApp } from "https://www.gstatic.com/firebasejs/10.7.1/firebase-app.js";
         import { getAuth, onAuthStateChanged } from "https://www.gstatic.com/firebasejs/10.7.1/firebase-auth.js";
 
-        // Firebase Config
         const firebaseConfig = {
             apiKey: "AIzaSyArqJycgZtlLpM7KQ2T9h-e2eJUHtMg-TY",
             authDomain: "tff-earns.firebaseapp.com",
@@ -131,71 +125,72 @@
         const app = initializeApp(firebaseConfig);
         const auth = getAuth(app);
 
+        // Timer Data
         let startTime = Date.now();
-        let totalSeconds = parseInt(localStorage.getItem('aniking_usage')) || 0;
+        let savedSeconds = parseInt(localStorage.getItem('aniking_usage_v2')) || 0;
 
-        // Timer Logic
-        setInterval(() => {
-            let sessionSeconds = Math.floor((Date.now() - startTime) / 1000);
-            let displayTotal = totalSeconds + sessionSeconds;
-
-            // Update Header
-            document.getElementById('usage-timer').innerText = `Session: ${formatTime(sessionSeconds)}`;
+        function updateTimers() {
+            let sessionSec = Math.floor((Date.now() - startTime) / 1000);
+            let totalSec = savedSeconds + sessionSec;
             
-            // Update Modal Box
-            document.getElementById('total-usage-display').innerText = formatTime(displayTotal);
+            // Update the display elements
+            document.getElementById('session-timer').innerText = `Session: ${format(sessionSec)}`;
+            document.getElementById('usage-display-box').innerText = format(totalSec);
             
-            // Save to LocalStorage
-            localStorage.setItem('aniking_usage', displayTotal);
-        }, 1000);
+            // Save to local storage
+            localStorage.setItem('aniking_usage_v2', totalSec);
+        }
 
-        function formatTime(s) {
+        function format(s) {
             let m = Math.floor(s / 60);
             let sec = s % 60;
             return `${m}m ${sec}s`;
         }
 
+        // Run timer every second
+        setInterval(updateTimers, 1000);
+
         onAuthStateChanged(auth, (user) => {
             if (user) {
-                document.getElementById('header-name').innerText = user.displayName || "User";
+                document.getElementById('header-name').innerText = user.displayName || "Fan";
                 document.getElementById('header-avatar').src = user.photoURL || "";
-                document.getElementById('modal-name').innerText = user.displayName || "User";
+                document.getElementById('modal-name').innerText = user.displayName || "Fan";
                 document.getElementById('modal-avatar').src = user.photoURL || "";
-            } else {
-                window.location.href = "index.html";
             }
         });
+
+        // Global functions for buttons
+        window.openProfile = function() {
+            updateTimers(); // Refresh display before showing
+            document.getElementById('account-modal').style.display = 'flex';
+        };
+        window.closeProfile = function() {
+            document.getElementById('account-modal').style.display = 'none';
+        };
     </script>
 
     <script>
-        // Chatbot Logic
         const chatWindow = document.getElementById('chat-window');
         const userInput = document.getElementById('user-input');
         const sendBtn = document.getElementById('send-btn');
-
-        function toggleModal(show) { document.getElementById('account-modal').style.display = show ? 'flex' : 'none'; }
 
         sendBtn.onclick = () => {
             const val = userInput.value.trim();
             if (!val) return;
 
-            // User Msg
             const uDiv = document.createElement('div');
             uDiv.className = 'message user';
             uDiv.innerText = val;
             chatWindow.appendChild(uDiv);
             userInput.value = '';
 
-            // Bot Logic
             setTimeout(() => {
                 const bDiv = document.createElement('div');
                 bDiv.className = 'message bot';
-                let reply = "I'm still learning! Ask about RR Networks or specific Anime.";
-                
+                let reply = "I'm looking into that anime for you!";
                 if(val.toLowerCase().includes("who made you")) {
                     reply = "I was developed by **RR Networks** and I am powered by **ANIKING INDIA** technology!";
                 }
-                
                 bDiv.innerHTML = reply;
                 chatWindow.appendChild(bDiv);
                 chatWindow.scrollTop = chatWindow.scrollHeight;
