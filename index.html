@@ -1,0 +1,144 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>ANIKING - Anime Bot</title>
+    <link href="https://fonts.googleapis.com/css2?family=Orbitron:wght@400;700&family=Inter:wght@300;500;700&display=swap" rel="stylesheet">
+    <style>
+        :root {
+            --bg-dark: #050505;
+            --card-bg: rgba(15, 15, 15, 0.98);
+            --accent-cyan: #00f2ff;
+            --text-main: #ffffff;
+            --bot-msg: #1a1a1a;
+            --user-msg: #004d4d;
+        }
+
+        body { 
+            font-family: 'Inter', sans-serif; background-color: var(--bg-dark);
+            margin: 0; color: var(--text-main); height: 100vh; display: flex; flex-direction: column;
+        }
+
+        /* Chat Header */
+        .chat-header {
+            background: var(--card-bg); padding: 15px; border-bottom: 1px solid var(--accent-cyan);
+            display: flex; align-items: center; justify-content: space-between;
+            box-shadow: 0 0 15px rgba(0, 242, 255, 0.2);
+        }
+
+        .chat-header h2 { font-family: 'Orbitron'; font-size: 1rem; color: var(--accent-cyan); margin: 0; }
+
+        /* Chat Window */
+        #chat-window {
+            flex: 1; overflow-y: auto; padding: 20px; display: flex; flex-direction: column; gap: 15px;
+            background: radial-gradient(circle at center, #0a1114 0%, #050505 100%);
+        }
+
+        .message { max-width: 80%; padding: 12px 16px; border-radius: 15px; font-size: 0.9rem; line-height: 1.4; }
+        .bot { align-self: flex-start; background: var(--bot-msg); border: 1px solid #333; border-bottom-left-radius: 2px; }
+        .user { align-self: flex-end; background: var(--user-msg); border: 1px solid var(--accent-cyan); border-bottom-right-radius: 2px; }
+
+        /* Input Area */
+        .input-area {
+            padding: 15px; background: #0a0a0a; display: flex; gap: 10px; border-top: 1px solid #222;
+        }
+
+        #user-input {
+            flex: 1; background: #151515; border: 1px solid #333; padding: 12px;
+            border-radius: 25px; color: white; outline: none;
+        }
+
+        #user-input:focus { border-color: var(--accent-cyan); }
+
+        #send-btn {
+            background: var(--accent-cyan); border: none; width: 45px; height: 45px;
+            border-radius: 50%; cursor: pointer; display: flex; align-items: center; justify-content: center;
+        }
+
+        .branding { font-size: 0.6rem; color: #444; text-align: center; padding: 5px; }
+    </style>
+</head>
+<body>
+
+    <div class="chat-header">
+        <div>
+            <h2>ANIKING AI</h2>
+            <span style="font-size: 0.6rem; color: #00ff00;">● Online | Anime Expert</span>
+        </div>
+        <button onclick="location.reload()" style="background:none; border:none; color:var(--accent-cyan); font-size: 1.2rem;">↻</button>
+    </div>
+
+    <div id="chat-window">
+        <div class="message bot">Hello! I am your ANIKING assistant. Ask me anything about Anime, Manga, or the app!</div>
+    </div>
+
+    <div class="input-area">
+        <input type="text" id="user-input" placeholder="Ask about Naruto, One Piece, etc...">
+        <button id="send-btn">➤</button>
+    </div>
+    
+    <div class="branding">RR NETWORKS © POWERED BY ANIKING</div>
+
+    <script>
+        const chatWindow = document.getElementById('chat-window');
+        const userInput = document.getElementById('user-input');
+        const sendBtn = document.getElementById('send-btn');
+
+        const botBrain = {
+            "who made you": "I was developed by **RR Networks** and I am powered by **ANIKING INDIA** technology!",
+            "who is your creator": "My creators are the team at **RR Networks**, specifically for the **ANIKING** community.",
+            "hello": "Kon'nichiwa! Ready to discuss some anime today?",
+            "hi": "Hey there! Which anime are we talking about today?",
+            "naruto": "Naruto is a masterpiece! Did you know Masashi Kishimoto originally didn't plan for Sasuke to exist?",
+            "one piece": "One Piece is legendary! Luffy's journey to become the Pirate King is something every fan should watch.",
+            "solo leveling": "Solo Leveling is peak! Sung Jin-woo's evolution from the weakest to the strongest is incredible.",
+            "help": "I can answer questions about your favorite shows, characters, or who built this awesome app!",
+            "bye": "Sayonara! Come back soon to ANIKING!"
+        };
+
+        function addMessage(text, sender) {
+            const div = document.createElement('div');
+            div.className = `message ${sender}`;
+            div.innerHTML = text;
+            chatWindow.appendChild(div);
+            chatWindow.scrollTop = chatWindow.scrollHeight;
+        }
+
+        function getResponse(input) {
+            const cleanInput = input.toLowerCase().trim();
+            
+            // Check specific creator questions
+            if (cleanInput.includes("who made you") || cleanInput.includes("who created you") || cleanInput.includes("who are you")) {
+                return botBrain["who made you"];
+            }
+
+            // Simple search logic
+            for (let key in botBrain) {
+                if (cleanInput.includes(key)) {
+                    return botBrain[key];
+                }
+            }
+
+            return "That's an interesting doubt! While I'm still learning the deep secrets of every anime, I recommend checking the 'Trending' section of the **ANIKING** app for more info!";
+        }
+
+        function handleSend() {
+            const text = userInput.value;
+            if (!text) return;
+
+            addMessage(text, 'user');
+            userInput.value = '';
+
+            setTimeout(() => {
+                const response = getResponse(text);
+                addMessage(response, 'bot');
+            }, 800);
+        }
+
+        sendBtn.onclick = handleSend;
+        userInput.onkeypress = (e) => { if (e.key === 'Enter') handleSend(); };
+    </script>
+</body>
+</html>
+
