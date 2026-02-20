@@ -2,7 +2,7 @@
 <html lang="en">
 <head>
     <meta charset="UTF-8">
-    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
     <title>ANIKING - Chatbot</title>
     <link href="https://fonts.googleapis.com/css2?family=Orbitron:wght@400;700&family=Inter:wght@300;500;700&display=swap" rel="stylesheet">
     <style>
@@ -15,21 +15,27 @@
             --user-msg: #004d4d;
         }
 
-        body { 
-            font-family: 'Inter', sans-serif; background-color: var(--bg-dark);
-            margin: 0; color: var(--text-main); height: 100vh; display: flex; flex-direction: column; overflow: hidden;
+        /* FLEXBOX FIX: Ensures header + chat + input fit perfectly */
+        body, html { 
+            margin: 0; padding: 0; width: 100%; height: 100%;
+            background-color: var(--bg-dark); color: var(--text-main);
+            font-family: 'Inter', sans-serif; overflow: hidden;
+            display: flex; flex-direction: column;
         }
 
+        /* Header */
         .chat-header {
-            background: var(--card-bg); padding: 10px 15px; border-bottom: 1px solid var(--accent-cyan);
+            background: var(--card-bg); padding: 12px 15px;
+            border-bottom: 1px solid var(--accent-cyan);
             display: flex; align-items: center; justify-content: space-between;
-            box-shadow: 0 0 15px rgba(0, 242, 255, 0.2); z-index: 100;
+            box-shadow: 0 0 15px rgba(0, 242, 255, 0.2);
+            flex-shrink: 0; /* Prevents header from squishing */
         }
 
         .header-left { display: flex; align-items: center; gap: 10px; }
         .chat-header h2 { font-family: 'Orbitron'; font-size: 0.8rem; color: var(--accent-cyan); margin: 0; }
 
-        /* User Account Pill */
+        /* User Pill */
         .user-pill {
             display: flex; align-items: center; background: rgba(0, 242, 255, 0.1);
             padding: 4px 10px; border-radius: 20px; border: 1px solid var(--accent-cyan); cursor: pointer;
@@ -37,18 +43,39 @@
         .user-pill img { width: 22px; height: 22px; border-radius: 50%; margin-right: 6px; }
         .user-pill span { font-size: 0.7rem; color: white; }
 
-        /* Chat Window */
-        #chat-window { flex: 1; overflow-y: auto; padding: 20px; display: flex; flex-direction: column; gap: 15px; background: #050505; }
-        .message { max-width: 80%; padding: 12px; border-radius: 12px; font-size: 0.9rem; }
+        /* Scrollable Chat Area */
+        #chat-window { 
+            flex: 1; /* Takes all available space between header and input */
+            overflow-y: auto; padding: 20px; 
+            display: flex; flex-direction: column; gap: 15px;
+            background: radial-gradient(circle at center, #0a1114 0%, #050505 100%);
+        }
+
+        .message { max-width: 80%; padding: 12px; border-radius: 12px; font-size: 0.9rem; word-wrap: break-word; }
         .bot { align-self: flex-start; background: var(--bot-msg); border: 1px solid #333; }
         .user { align-self: flex-end; background: var(--user-msg); border: 1px solid var(--accent-cyan); }
 
-        /* Input Area */
-        .input-area { padding: 15px; background: #0a0a0a; display: flex; gap: 10px; border-top: 1px solid #222; }
-        #user-input { flex: 1; background: #151515; border: 1px solid #333; padding: 12px; border-radius: 25px; color: white; outline: none; }
-        #send-btn { background: var(--accent-cyan); border: none; padding: 0 20px; border-radius: 25px; font-weight: bold; cursor: pointer; }
+        /* BOTTOM INPUT BOX - Now always visible */
+        .input-area { 
+            padding: 12px 15px; background: #0a0a0a; 
+            display: flex; gap: 10px; border-top: 1px solid #222;
+            flex-shrink: 0; /* Keeps it at the bottom */
+            padding-bottom: env(safe-area-inset-bottom, 15px); /* Fix for iPhone/New Androids */
+        }
 
-        /* MODAL */
+        #user-input { 
+            flex: 1; background: #151515; border: 1px solid #333; 
+            padding: 12px; border-radius: 25px; color: white; outline: none; 
+            font-size: 16px; /* Prevents auto-zoom on mobile */
+        }
+
+        #send-btn { 
+            background: var(--accent-cyan); border: none; 
+            padding: 0 18px; border-radius: 25px; 
+            font-weight: bold; cursor: pointer; color: #000;
+        }
+
+        /* Modal Overlay */
         #account-modal {
             position: fixed; top: 0; left: 0; width: 100%; height: 100%;
             background: rgba(0,0,0,0.95); display: none; align-items: center; justify-content: center; z-index: 2000;
@@ -57,17 +84,7 @@
             background: #111; padding: 30px; border-radius: 20px; border: 1px solid var(--accent-cyan);
             text-align: center; width: 85%; max-width: 300px;
         }
-        .modal-content img { width: 80px; height: 80px; border-radius: 50%; border: 2px solid var(--accent-cyan); margin-bottom: 10px; }
-
-        /* THE ROUNDED USAGE BOX */
-        .usage-box {
-            margin: 20px 0; padding: 15px; border-radius: 20px;
-            background: rgba(0, 242, 255, 0.05); border: 1px dashed var(--accent-cyan);
-        }
-        .usage-box p { font-size: 0.6rem; color: #888; text-transform: uppercase; margin: 0; }
-        .usage-box span { display: block; font-family: 'Orbitron'; color: var(--accent-cyan); font-size: 1.2rem; margin-top: 5px; }
-
-        .close-btn { background: var(--accent-cyan); color: #000; padding: 12px; border-radius: 8px; border: none; width: 100%; font-weight: bold; cursor: pointer; }
+        .usage-box { margin: 15px 0; padding: 15px; border-radius: 20px; background: rgba(0, 242, 255, 0.05); border: 1px dashed var(--accent-cyan); }
     </style>
 </head>
 <body>
@@ -88,25 +105,23 @@
     </div>
 
     <div id="chat-window">
-        <div class="message bot">Welcome! I am tracking your usage time. Click your profile to see it!</div>
+        <div class="message bot">Welcome back! Input box is now fixed. How can I help?</div>
     </div>
 
     <div class="input-area">
-        <input type="text" id="user-input" placeholder="Ask a doubt...">
+        <input type="text" id="user-input" placeholder="Type a message...">
         <button id="send-btn">SEND</button>
     </div>
 
     <div id="account-modal">
         <div class="modal-content">
-            <img id="modal-avatar" src="">
-            <h3 id="modal-name" style="color: var(--accent-cyan); margin: 10px 0; font-family: 'Orbitron';">---</h3>
-            
+            <img id="modal-avatar" style="width:70px; height:70px; border-radius:50%; border:2px solid var(--accent-cyan);" src="">
+            <h3 id="modal-name" style="color:var(--accent-cyan); margin:10px 0; font-family:'Orbitron';">---</h3>
             <div class="usage-box">
-                <p>Chatbot Usage Time</p>
-                <span id="usage-display-box">0m 0s</span>
+                <p style="font-size:0.6rem; color:#888; margin:0;">TOTAL USAGE TIME</p>
+                <span id="usage-display-box" style="font-family:'Orbitron'; color:var(--accent-cyan); font-size:1.2rem;">0m 0s</span>
             </div>
-
-            <button class="close-btn" onclick="closeProfile()">BACK TO CHAT</button>
+            <button onclick="closeProfile()" style="background:var(--accent-cyan); color:#000; padding:12px; border-radius:8px; border:none; width:100%; font-weight:bold;">BACK TO CHAT</button>
         </div>
     </div>
 
@@ -125,48 +140,29 @@
         const app = initializeApp(firebaseConfig);
         const auth = getAuth(app);
 
-        // Timer Data
         let startTime = Date.now();
-        let savedSeconds = parseInt(localStorage.getItem('aniking_usage_v2')) || 0;
+        let savedSeconds = parseInt(localStorage.getItem('aniking_usage_v3')) || 0;
 
         function updateTimers() {
             let sessionSec = Math.floor((Date.now() - startTime) / 1000);
             let totalSec = savedSeconds + sessionSec;
-            
-            // Update the display elements
-            document.getElementById('session-timer').innerText = `Session: ${format(sessionSec)}`;
-            document.getElementById('usage-display-box').innerText = format(totalSec);
-            
-            // Save to local storage
-            localStorage.setItem('aniking_usage_v2', totalSec);
+            document.getElementById('session-timer').innerText = `Session: ${Math.floor(sessionSec/60)}m ${sessionSec%60}s`;
+            document.getElementById('usage-display-box').innerText = `${Math.floor(totalSec/60)}m ${totalSec%60}s`;
+            localStorage.setItem('aniking_usage_v3', totalSec);
         }
-
-        function format(s) {
-            let m = Math.floor(s / 60);
-            let sec = s % 60;
-            return `${m}m ${sec}s`;
-        }
-
-        // Run timer every second
         setInterval(updateTimers, 1000);
 
         onAuthStateChanged(auth, (user) => {
             if (user) {
                 document.getElementById('header-name').innerText = user.displayName || "Fan";
-                document.getElementById('header-avatar').src = user.photoURL || "";
+                document.getElementById('header-avatar').src = user.photoURL || "https://api.dicebear.com/7.x/adventurer/svg?seed=Lucky";
                 document.getElementById('modal-name').innerText = user.displayName || "Fan";
-                document.getElementById('modal-avatar').src = user.photoURL || "";
+                document.getElementById('modal-avatar').src = user.photoURL || "https://api.dicebear.com/7.x/adventurer/svg?seed=Lucky";
             }
         });
 
-        // Global functions for buttons
-        window.openProfile = function() {
-            updateTimers(); // Refresh display before showing
-            document.getElementById('account-modal').style.display = 'flex';
-        };
-        window.closeProfile = function() {
-            document.getElementById('account-modal').style.display = 'none';
-        };
+        window.openProfile = () => { document.getElementById('account-modal').style.display = 'flex'; };
+        window.closeProfile = () => { document.getElementById('account-modal').style.display = 'none'; };
     </script>
 
     <script>
@@ -177,21 +173,17 @@
         sendBtn.onclick = () => {
             const val = userInput.value.trim();
             if (!val) return;
-
             const uDiv = document.createElement('div');
             uDiv.className = 'message user';
             uDiv.innerText = val;
             chatWindow.appendChild(uDiv);
             userInput.value = '';
+            chatWindow.scrollTop = chatWindow.scrollHeight;
 
             setTimeout(() => {
                 const bDiv = document.createElement('div');
                 bDiv.className = 'message bot';
-                let reply = "I'm looking into that anime for you!";
-                if(val.toLowerCase().includes("who made you")) {
-                    reply = "I was developed by **RR Networks** and I am powered by **ANIKING INDIA** technology!";
-                }
-                bDiv.innerHTML = reply;
+                bDiv.innerHTML = val.toLowerCase().includes("who made you") ? "I was developed by **RR Networks** and I am powered by **ANIKING INDIA** technology!" : "I am your ANIKING assistant. Ask me anything!";
                 chatWindow.appendChild(bDiv);
                 chatWindow.scrollTop = chatWindow.scrollHeight;
             }, 800);
