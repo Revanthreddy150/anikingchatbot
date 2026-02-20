@@ -3,7 +3,7 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>ANIKING - Anime Bot</title>
+    <title>ANIKING - AI Chat & Account</title>
     <link href="https://fonts.googleapis.com/css2?family=Orbitron:wght@400;700&family=Inter:wght@300;500;700&display=swap" rel="stylesheet">
     <style>
         :root {
@@ -22,12 +22,22 @@
 
         /* Chat Header */
         .chat-header {
-            background: var(--card-bg); padding: 15px; border-bottom: 1px solid var(--accent-cyan);
+            background: var(--card-bg); padding: 12px 15px; border-bottom: 1px solid var(--accent-cyan);
             display: flex; align-items: center; justify-content: space-between;
-            box-shadow: 0 0 15px rgba(0, 242, 255, 0.2);
+            box-shadow: 0 0 15px rgba(0, 242, 255, 0.2); z-index: 100;
         }
 
-        .chat-header h2 { font-family: 'Orbitron'; font-size: 1rem; color: var(--accent-cyan); margin: 0; }
+        .chat-header h2 { font-family: 'Orbitron'; font-size: 0.9rem; color: var(--accent-cyan); margin: 0; }
+
+        /* Account Section in Header */
+        .user-pill {
+            display: flex; align-items: center; background: rgba(255,255,255,0.05);
+            padding: 5px 12px; border-radius: 20px; border: 1px solid rgba(0, 242, 255, 0.3);
+            cursor: pointer; transition: 0.3s;
+        }
+        .user-pill:hover { background: rgba(0, 242, 255, 0.1); }
+        .user-pill img { width: 24px; height: 24px; border-radius: 50%; margin-right: 8px; border: 1px solid var(--accent-cyan); }
+        .user-pill span { font-size: 0.75rem; font-weight: bold; color: var(--accent-cyan); }
 
         /* Chat Window */
         #chat-window {
@@ -40,23 +50,23 @@
         .user { align-self: flex-end; background: var(--user-msg); border: 1px solid var(--accent-cyan); border-bottom-right-radius: 2px; }
 
         /* Input Area */
-        .input-area {
-            padding: 15px; background: #0a0a0a; display: flex; gap: 10px; border-top: 1px solid #222;
+        .input-area { padding: 15px; background: #0a0a0a; display: flex; gap: 10px; border-top: 1px solid #222; }
+        #user-input { flex: 1; background: #151515; border: 1px solid #333; padding: 12px; border-radius: 25px; color: white; outline: none; }
+        #send-btn { background: var(--accent-cyan); border: none; width: 45px; height: 45px; border-radius: 50%; cursor: pointer; display: flex; align-items: center; justify-content: center; }
+
+        .branding { font-size: 0.6rem; color: #444; text-align: center; padding: 5px; background: #000; }
+
+        /* Account Overlay */
+        #account-modal {
+            position: fixed; top: 0; left: 0; width: 100%; height: 100%;
+            background: rgba(0,0,0,0.9); display: none; align-items: center; justify-content: center; z-index: 1000;
         }
-
-        #user-input {
-            flex: 1; background: #151515; border: 1px solid #333; padding: 12px;
-            border-radius: 25px; color: white; outline: none;
+        .modal-content {
+            background: #111; padding: 30px; border-radius: 15px; border: 1px solid var(--accent-cyan);
+            text-align: center; width: 80%; max-width: 300px;
         }
-
-        #user-input:focus { border-color: var(--accent-cyan); }
-
-        #send-btn {
-            background: var(--accent-cyan); border: none; width: 45px; height: 45px;
-            border-radius: 50%; cursor: pointer; display: flex; align-items: center; justify-content: center;
-        }
-
-        .branding { font-size: 0.6rem; color: #444; text-align: center; padding: 5px; }
+        .modal-content img { width: 80px; height: 80px; border-radius: 50%; border: 2px solid var(--accent-cyan); margin-bottom: 15px; }
+        .close-btn { margin-top: 20px; background: var(--accent-cyan); color: #000; padding: 10px 20px; border-radius: 5px; border: none; cursor: pointer; font-weight: bold; width: 100%; }
     </style>
 </head>
 <body>
@@ -64,23 +74,72 @@
     <div class="chat-header">
         <div>
             <h2>ANIKING AI</h2>
-            <span style="font-size: 0.6rem; color: #00ff00;">● Online | Anime Expert</span>
         </div>
-        <button onclick="location.reload()" style="background:none; border:none; color:var(--accent-cyan); font-size: 1.2rem;">↻</button>
+        
+        <div class="user-pill" id="profile-trigger" onclick="toggleModal(true)">
+            <img id="header-avatar" src="https://api.dicebear.com/7.x/adventurer/svg?seed=Lucky" alt="U">
+            <span id="header-name">Loading...</span>
+        </div>
     </div>
 
     <div id="chat-window">
-        <div class="message bot">Hello! I am your ANIKING assistant. Ask me anything about Anime, Manga, or the app!</div>
+        <div class="message bot">Hello! I am your ANIKING assistant. Since you are logged in, I can help you better!</div>
     </div>
 
     <div class="input-area">
-        <input type="text" id="user-input" placeholder="Ask about Naruto, One Piece, etc...">
+        <input type="text" id="user-input" placeholder="Ask about anime...">
         <button id="send-btn">➤</button>
     </div>
     
     <div class="branding">RR NETWORKS © POWERED BY ANIKING</div>
 
+    <div id="account-modal">
+        <div class="modal-content">
+            <img id="modal-avatar" src="" alt="Avatar">
+            <h3 id="modal-name" style="margin: 10px 0; font-family: 'Orbitron'; color: var(--accent-cyan);">---</h3>
+            <p id="modal-email" style="font-size: 0.8rem; color: #888; margin-bottom: 20px;">---</p>
+            <button class="close-btn" onclick="toggleModal(false)">BACK TO CHAT</button>
+        </div>
+    </div>
+
+    <script type="module">
+        // Firebase Integration (Same config as your Login Page)
+        import { initializeApp } from "https://www.gstatic.com/firebasejs/10.7.1/firebase-app.js";
+        import { getAuth, onAuthStateChanged } from "https://www.gstatic.com/firebasejs/10.7.1/firebase-auth.js";
+
+        const firebaseConfig = {
+            apiKey: "AIzaSyArqJycgZtlLpM7KQ2T9h-e2eJUHtMg-TY",
+            authDomain: "tff-earns.firebaseapp.com",
+            projectId: "tff-earns",
+            storageBucket: "tff-earns.firebasestorage.app",
+            messagingSenderId: "762695597074",
+            appId: "1:762695597074:web:bd7a8df2df2806d5b26ccb"
+        };
+
+        const app = initializeApp(firebaseConfig);
+        const auth = getAuth(app);
+
+        // Detect User and Update Header
+        onAuthStateChanged(auth, (user) => {
+            if (user) {
+                const name = user.displayName || "Anime Fan";
+                const photo = user.photoURL || "https://api.dicebear.com/7.x/adventurer/svg?seed=Lucky";
+                
+                document.getElementById('header-name').innerText = name;
+                document.getElementById('header-avatar').src = photo;
+                
+                // Set Modal Details
+                document.getElementById('modal-name').innerText = name;
+                document.getElementById('modal-email').innerText = user.email;
+                document.getElementById('modal-avatar').src = photo;
+            } else {
+                window.location.href = "index.html"; // Redirect to login if not found
+            }
+        });
+    </script>
+
     <script>
+        // Chatbot Logic
         const chatWindow = document.getElementById('chat-window');
         const userInput = document.getElementById('user-input');
         const sendBtn = document.getElementById('send-btn');
@@ -89,12 +148,8 @@
             "who made you": "I was developed by **RR Networks** and I am powered by **ANIKING INDIA** technology!",
             "who is your creator": "My creators are the team at **RR Networks**, specifically for the **ANIKING** community.",
             "hello": "Kon'nichiwa! Ready to discuss some anime today?",
-            "hi": "Hey there! Which anime are we talking about today?",
             "naruto": "Naruto is a masterpiece! Did you know Masashi Kishimoto originally didn't plan for Sasuke to exist?",
-            "one piece": "One Piece is legendary! Luffy's journey to become the Pirate King is something every fan should watch.",
-            "solo leveling": "Solo Leveling is peak! Sung Jin-woo's evolution from the weakest to the strongest is incredible.",
-            "help": "I can answer questions about your favorite shows, characters, or who built this awesome app!",
-            "bye": "Sayonara! Come back soon to ANIKING!"
+            "one piece": "One Piece is legendary! Luffy's journey to become the Pirate King is worth the watch."
         };
 
         function addMessage(text, sender) {
@@ -105,40 +160,26 @@
             chatWindow.scrollTop = chatWindow.scrollHeight;
         }
 
-        function getResponse(input) {
-            const cleanInput = input.toLowerCase().trim();
-            
-            // Check specific creator questions
-            if (cleanInput.includes("who made you") || cleanInput.includes("who created you") || cleanInput.includes("who are you")) {
-                return botBrain["who made you"];
-            }
-
-            // Simple search logic
-            for (let key in botBrain) {
-                if (cleanInput.includes(key)) {
-                    return botBrain[key];
-                }
-            }
-
-            return "That's an interesting doubt! While I'm still learning the deep secrets of every anime, I recommend checking the 'Trending' section of the **ANIKING** app for more info!";
+        function toggleModal(show) {
+            document.getElementById('account-modal').style.display = show ? 'flex' : 'none';
         }
 
-        function handleSend() {
+        sendBtn.onclick = () => {
             const text = userInput.value;
             if (!text) return;
-
             addMessage(text, 'user');
             userInput.value = '';
-
             setTimeout(() => {
-                const response = getResponse(text);
+                const cleanInput = text.toLowerCase();
+                let response = "That's an interesting doubt! Check the 'Trending' section for more info.";
+                for (let key in botBrain) {
+                    if (cleanInput.includes(key)) response = botBrain[key];
+                }
                 addMessage(response, 'bot');
             }, 800);
-        }
+        };
 
-        sendBtn.onclick = handleSend;
-        userInput.onkeypress = (e) => { if (e.key === 'Enter') handleSend(); };
+        userInput.onkeypress = (e) => { if (e.key === 'Enter') sendBtn.click(); };
     </script>
 </body>
 </html>
-
